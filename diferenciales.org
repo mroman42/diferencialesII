@@ -1,0 +1,234 @@
+#+TITLE: Unicidad de solución
+#+AUTHOR: Mario Román
+
+#+OPTIONS: toc:nil
+#+LATEX_HEADER_EXTRA: \usepackage{wallpaper}\ThisULCornerWallPaper{1}{ugrA4.pdf}
+
+** Header                                                           :ignore:
+*** Libraries                                                      :ignore:
+#+latex_header: \usepackage{amsthm}
+#+latex_header: \usepackage{amsmath}
+#+latex_header: \usepackage{tikz}
+#+latex_header: \usepackage{tikz-cd}
+#+latex_header: \usetikzlibrary{shapes,fit,graph}
+#+latex_header: \usepackage{bussproofs}
+#+latex_header: \EnableBpAbbreviations{}
+#+latex_header: \usepackage{mathtools}
+#+latex_header: \usepackage{scalerel}
+#+latex_header: \usepackage{stmaryrd}
+
+#+latex_header: \usepackage[a4paper]{geometry}
+
+*** Fonts                                                          :ignore:
+#+latex_header_extra: % \usepackage{libertine}
+#+latex_header_extra: % \usepackage{libertinust1math}
+#+latex_header_extra: \usepackage{inconsolata}
+#+latex_header_extra: % \usepackage[scale=MatchLowercase]{FiraMono}
+#+latex_header_extra: \usepackage[scale=0.85]{FiraMono}
+#+latex_header_extra: \usepackage[T1]{fontenc}
+
+*** Theorem styles                                                 :ignore:
+#+latex_header: \theoremstyle{plain}
+#+latex_header: \newtheorem{theorem}{Teorema}
+#+latex_header: \newtheorem{proposition}{Proposición}
+#+latex_header: \newtheorem{lemma}{Lema}
+#+latex_header: \newtheorem{corollary}{Corolario}
+#+latex_header: \theoremstyle{definition}
+#+latex_header: \newtheorem{definition}{Definición}
+#+latex_header: \newtheorem{proofs}{Demostración}
+#+latex_header: \theoremstyle{remark}
+#+latex_header: \newtheorem{remark}{Remark}
+#+latex_header: \newtheorem{exampleth}{Ejemplo}
+#+latex_header: \begingroup\makeatletter\@for\theoremstyle:=definition,remark,plain\do{\expandafter\g@addto@macro\csname th@\theoremstyle\endcsname{\addtolength\thm@preskip\parskip}}\endgroup
+
+
+* Índice                                                             :ignore:
+#+latex: \newpage
+#+TOC: headlines 2
+#+latex: \newpage
+* Preliminares
+
+** Entornos y espacios de funciones para Picard-Lindelöf
+Dados $a,b\in \mathbb{R}^+$, definimos la siguiente familia de entornos cerrados,
+que pueden verse como la evolución en el tiempo de una bola cerrada de
+radio $b$.
+\[\begin{aligned}
+{\cal R}_{a,b}(t_0,x_0)
+&= \left\{ (t,x) \in \mathbb{R}\times \mathbb{R}^d \mid |t - t_0| < a, \|x - x_0\| \leq b \right\} \\
+&= [t_0-a,t_0+a] \times \overline{B}(x_0,b).
+\end{aligned}\]
+
+El espacio de funciones $\varphi \colon [t_0 - a, t_0 + a] \to \mathbb{R}^d$ cuya gráfica queda
+contenida en ${\cal R}_{a,b}$ es precisamente la bola cerrada de radio $b$ centrada
+en la función constante $\varphi_0(t) = x_0$, una vez que consideramos la norma
+infinito.
+\[\begin{aligned}
+E_{a,b}(t_0,x_0) &=
+\left\{ \varphi \in {\cal C}([t_0-a,t_0+a],\mathbb{R}^d) \;\middle|\; 
+(t,\varphi(t)) \in {\cal R}_{a,b}(t_0,x_0)  \right\}
+\\&= \left\{ \varphi \in {\cal C}([t_0-a,t_0+a],\mathbb{R}^d) \;\middle|\;
+\forall t \in [t_0-a,t_0+a]: \|\varphi(t) - \varphi_0(t)\| \leq b \right\}
+\\&= 
+\overline{B}_{\infty}(\varphi_0,b).
+\end{aligned}\]
+
+# TODO: Cerrado de completo es completo?
+# TODO: Por qué C es completo
+Al ser un subconjunto cerrado de un , es un espacio métrico completo
+cuando consideramos la distancia inducida $d_{\infty}(\varphi,\psi) = \|\varphi - \psi\|_{\infty}$.
+
+Usaremos durante esta exposición las abreviaturas $E_{a,b} = E_{a,b}(t_0,x_0)$
+y ${\cal R}_{a,b} = {\cal R}_{a,b}(t_0,x_0)$.
+
+** Operador integral de Volterra
+En este espacio podemos considerar el *operador de Volterra*
+$V \colon E \to {\cal C}([t_0-a,t_0+a],\mathbb{R}^d)$ definido por
+\[
+V(\varphi)(t) = x_0 + \int_{t_0}^t f(s,\varphi(s))\;ds.
+\]
+
+#+ATTR_LATEX: :options [sobre el operador de Volterra]
+#+BEGIN_lemma
+<<lemma1-volterra>>
+Si $M\geq 0$ cumple que $\forall (t,x) \in {\cal R}_{a,b}: \|f(t,x)\| \leq M$, entonces
+$\|V(\varphi) - \varphi_0\|_{\infty} \leq Ma$ para cualquier $\varphi \in E_{a,b}$.
+#+END_lemma
+#+BEGIN_proof
+Sabiendo que $\varphi \in E_{a,b}$, tenemos que $(s,\varphi(s)) \in {\cal R}_{a,b}$
+para cualquier $s \in [t_0-a,t_0+a]$; por lo que $\|f(s,\varphi(s))\| \leq M$ y
+se tiene la siguiente cadena de desigualdades.
+\[ 
+\| V(\varphi) - \varphi_0 \|_{\infty} \leq
+\left\| \int_{t_0}^t f(s,\varphi(s))\,ds \right\|_{\infty} \leq
+M\| t - t_0 \|_{\infty} \leq
+Ma.\qedhere
+\]
+#+END_proof
+
+#+ATTR_LATEX: :options [Corolario al Lema 1]
+#+BEGIN_corollary
+<<corollary-lemma1-volterra>>
+Si $M \geq 0$ cumple que $\forall (t,x) \in {\cal R}_{a,b}: \|f(t,x)\| \leq M$ y además
+$Ma \leq b$, se tiene $V(E) \subset E$.
+#+END_corollary
+#+BEGIN_proof
+Nótese que si leemos $E$ como la bola cerrada $\overline{B}_{\infty}(\varphi_0,b)$, tenemos
+por el Lema [[lemma1-volterra]] que $V(E) \subset \overline{B}_{\infty}(\varphi_0,Ma) \subset \overline{B}_{\infty}(\varphi_0,b)$.
+#+END_proof
+
+#+ATTR_LATEX: :options [sobre el operador de Volterra]
+#+BEGIN_lemma
+Si $M \geq 0$ cumple que $\forall (t,x)\in {\cal R}_{a,b} : \|f(t,x)\| \leq M$ y además
+$Ma \leq b$; se tiene que si $\varphi \colon [t_0-a,t_0+a] \to \mathbb{R}^d$ es solución
+de la ecuación de Volterra, entonces $\varphi \in E_{a,b}$.
+#+END_lemma
+#+BEGIN_proof
+# TODO: La demostración tiene que tener cuidado con que phi no está en E.
+#+END_proof
+
+
+* Norma de Bielecki
+La *norma de Bielecki* para una constante $R > 0$ se define en el
+espacio $E_{a,b}$ como
+
+\[
+\|\varphi\|_B = \max_{t \in [t_0-a,t_0+a]} e^{-R|t-t_0|}\|\varphi(t)\|.
+\]
+
+# TODO: Bielecki es equivalente a la norma del infinito.
+
+#+ATTR_LATEX: :options [sobre la norma de Bielecki]
+#+BEGIN_lemma
+Si $L \geq 0$ cumple
+
+\[
+\forall (t,x),(t,y) \in {\cal R}_{a,b} : \| f(t,x) - f(t,y) \| \leq L\|x-y\|,
+\]
+
+entonces para $\varphi,\psi \in E_{a,b}$ se tiene $\|V(\varphi)-V(\psi)\|_B \leq \frac{L}{R} \|\varphi - \psi\|_B$.
+#+END_lemma
+#+BEGIN_proof
+# TODO: Proof
+#+END_proof
+
+#+ATTR_LATEX: :options []
+#+BEGIN_proposition
+Si $M,L \geq 0$ cumplen $\forall (t,x) \in {\cal R}_{a,b}\colon \|f(t,x)\| \leq M$ y
+$\forall (t,x),(t,y) \in {\cal R}_{a,b}\colon \|f(t,x)-f(t,y)\| \leq L\|x-y\|$,
+y además $Ma \leq b$, entonces existe una única
+$\varphi \colon [t_0-a,t_0+a] \to \mathbb{R}^d$ solución de la ecuación integral
+de Volterra.
+#+END_proposition
+#+BEGIN_proof
+# TODO: Proof
+#+END_proof
+
+* Teorema de Picard-Lindelöf
+** Teorema de Picard-Lindelöf
+# Abierto o dominio??? Necesitarías al menos que fuera un intervalo la
+# parte en R.
+
+#+ATTR_LATEX: :options [Picard-Lindelöf local]
+#+BEGIN_theorem
+Dado el siguiente problema de valores iniciales con $D \subset \mathbb{R}\times \mathbb{R}^d$ dominio,
+$(t_0,x_0) \in D$ y $f \colon D \to \mathbb{R}^N$ continua, 
+\[\left\{\begin{array}{l}
+x' = f(t,x), \\
+x(t_0) = x_0;
+\end{array}\right.\]
+
+si $f$ es localmente lipschitziana respecto de $x$ en un entorno de $(t_0,x_0)$,
+entonces existe solución al problema de valores iniciales y es
+localmente única.
+#+END_theorem
+#+BEGIN_proof
+# TODO
+#+END_proof
+
+
+#+ATTR_LATEX: :options [Picard-Lindelöf global]
+#+BEGIN_theorem
+Dado el siguiente problema de valores iniciales con $D \subset \mathbb{R} \times \mathbb{R}^d$ dominio,
+$(t_0,x_0) \in D$ y $f \colon D \to \mathbb{R}^N$ continua,
+\[\left\{\begin{array}{l}
+x' = f(t,x), \\
+x(t_0) = x_0;
+\end{array}\right.\]
+si $f$ es localmente lipschitziana respecto de $x$, entonces existe solución
+al problema de valores iniciales y es la única solución maximal.
+#+END_theorem
+#+BEGIN_proof
+# TODO
+#+END_proof
+
+** Iterantes de Picard
+#+ATTR_LATEX: :options [Iterantes de Picard]
+#+BEGIN_theorem
+Supongamos que tenemos constantes $a,b,M,L > 0$, un dominio $D \subset \mathbb{R} \times \mathbb{R}^d$
+cumpliendo
+
+ * $a \leq b/M$,
+ * ${\cal R}_{a,b} \subset D$,
+ * $\forall (t,x) \in {\cal R}_{a,b}\colon \|f(t,x)\| \leq M$,
+ * $\forall (t,x),(t,y) \in {\cal R}_{a,b} \colon \|f(t,x)-f(t,y)\| \leq L \|x-y\|$;
+
+entonces la sucesión de funciones definida recursivamente por
+
+ * $\phi_0(t) = x_0$,
+ * $\phi_{k+1}(t) = x_0 + \int_{t_0}^t f(s,\phi_k(s))\,ds$, 
+
+está bien definida y converge uniformemente hacia la única solución
+de la ecuación integral de Volterra. Esta sucesión $\left\{ \phi_n \right\}$ se conoce
+como sucesión de *iterantes de Picard*.
+#+END_theorem
+
+# TODO: cálculo de las iterantes con algún programa y algún ejemplo.
+
+** Contraejemplo de Müller
+# TODO: Buscar referencias para el contraejemplo de Müller
+
+* Teorema de Cauchy-Peano
+
+* Referencias :ignore:
+bibliographystyle:alpha
+bibliography:Bibliography.bib

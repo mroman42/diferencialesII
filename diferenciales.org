@@ -41,7 +41,6 @@
 #+latex_header: \newtheorem{exampleth}{Ejemplo}
 #+latex_header: \begingroup\makeatletter\@for\theoremstyle:=definition,remark,plain\do{\expandafter\g@addto@macro\csname th@\theoremstyle\endcsname{\addtolength\thm@preskip\parskip}}\endgroup
 
-
 * Índice                                                             :ignore:
 #+latex: \newpage
 #+TOC: headlines 2

@@ -335,7 +335,7 @@ en $\RR^d$, se define en el espacio \(E_{a,b}\) como
     \|\varphi\|_B = \max_{t \in [t_0-a,t_0+a]} e^{-R|t-t_0|} \|\varphi(t)\| \leq
      e^{-Ra} \|\varphi\|_\infty
    \]
-  y que
+  o que
   \[
    \|\varphi\|_\infty =  \max_{t \in [t_0-a,t_0+a]} e^{R|t-t_0|}e^{-R|t-t_0|} \|\varphi(t)\| \leq
    e^{Ra}\|\varphi\|_B.
@@ -624,7 +624,7 @@ $\lambda \in \mathbb{R}$ y $p_n,q_n \in {\cal A}$ con $p_n \overset{c.u.}\longri
       que $\norm{p}_{\infty} \leq \sup \left\{ \norm{p_n}_{\infty} \right\}$, que existe por la convergencia,
    \[
    \norm{p_nq_n - pq}_{\infty} \leq
-   \norm{p_n - p}_{\infty}\sup\set{\norm{q_n}_{\infty}} + 
+   \norm{p_n - p}_{\infty}\norm{q_n}_\infty + 
    \sup \left\{ \|p_n\|_{\infty} \right\} \norm{q_n-q}_{\infty} \longrightarrow 0;
    \]
 \item y $\lambda p_n \overset{c.u.}\longrightarrow \lambda p$, ya que $\norm{\lambda p_n}_{\infty} \leq \lambda\norm{p_{\infty}} \longrightarrow 0$.
@@ -845,7 +845,7 @@ Taylor y resolviendo la ecuación diferencial de~\cite{queen}.
 \begin{appendices}
 \section{Implementación de iterantes de Picard}
 A continuación presentamos una implementación del proceso de cálculo
-de iterantes de Picard.
+de iterantes de Picard usando SageMath.
 
 \begin{verbatim}
 #!/usr/bin/env sage

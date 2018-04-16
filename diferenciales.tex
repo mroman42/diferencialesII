@@ -1,11 +1,22 @@
 % Compilación:
 %   pdflatex --shell-escape
+%   bibtex
+%   pdflatex --shell-escape
+%   pdflatex --shell-escape
+
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[spanish]{babel}
+\usepackage[toc,page]{appendix}
+\addto\captionsspanish{
+  \renewcommand\appendixname{Anexo}
+  \renewcommand\appendixpagename{Anexos}
+  \renewcommand\appendixtocname{Anexos}
+}
 
 % Paquetes para el uso con latex
+\usepackage{parskip}
 \usepackage{fixltx2e}
 \usepackage{graphicx}
 \usepackage{grffile}
@@ -17,13 +28,16 @@
 \usepackage{textcomp}
 \usepackage{amssymb}
 \usepackage{capt-of}
-\usepackage[colorlinks=true]{hyperref}
+\usepackage[colorlinks=true,linkcolor=ugrRed,citecolor=ugrRed]{hyperref}
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{scalerel}
 \usepackage{stmaryrd}
 \usepackage[a4paper]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usepackage{pgfplots}
 
 % Estilos para los entornos matemáticos.
 \theoremstyle{plain}
@@ -48,12 +62,12 @@
 % Fuentes seleccionadas
 \usepackage{libertine}
 \usepackage{inconsolata}
-
+\definecolor{ugrRed}{HTML}{c6474b}
 
 % Autor y detalles del documento.
 \author{Mario Román}
 \date{\today}
-\title{Teorema de Picard-Lindelöf}
+\title{Teorema de Picard-Lindelöf y Teorema de Cauchy-Peano}
 
 \hypersetup{
  pdfauthor={Mario Román},
@@ -68,15 +82,14 @@
 \maketitle
 
 
-% Macros
-% Restricción de funciones
-\newcommand\restr[2]{{
-  \left.\kern-\nulldelimiterspace#1
-    \vphantom{\big|}
-  \right|_{#2}
-}}
 
-% Norma y valor absoluto
+%%----------------------------------------------------------------
+%%      Macros, operadores y símbolos
+%%----------------------------------------------------------------
+
+\newcommand\restr[2]{#1_{|_{#2}}}
+
+% Norma, valor absoluto y otros delimitadores
 \newcommand{\DeclareAutoPairedDelimiter}[3]{
   \expandafter\DeclarePairedDelimiter\csname Auto\string#1\endcsname{#2}{#3}
   \begingroup\edef\x{\endgroup
@@ -85,6 +98,22 @@
   \x}
 \DeclareAutoPairedDelimiter{\abs}{\lvert}{\rvert}
 \DeclareAutoPairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclareAutoPairedDelimiter{\set}{\{}{\}}
+\newcommand{\midd}{\;\middle|\;}
+
+% Operadores
+\def\spanishoperators{adj traza vect dom dist sop vol sgn  Hess Jac rango grado diag img longitud Maximizar Minimizar Optimizar sec cotan cosec}
+\newcommand{\w}{\displaystyle}
+\newcommand{\pre}[1]{\left\langle#1\right\rangle}
+
+
+% Símbolos
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\eR}{{\cal{R}}}
+\newcommand{\oB}{\overline{B}}
+\newcommand{\tf}{\widetilde{f}}
 
 
 \newpage
@@ -104,7 +133,7 @@
   \begin{itemize}
   \item la aplicación tiene un único punto fijo, es decir, $\exists! x^{\ast}\in E: F(x^{\ast}) = x^{\ast}$;
   \item y para cualquier $x_0 \in E$, las sucesivas aplicaciones de la función crean
-    una sucesión que tiende al punto fijo, $\left\{ F \circ \overset{n}{\dots} \circ F (x_0) \right\}_{n \in \mathbb{N}} \longrightarrow x^{\ast}$.
+    una sucesión que tiende al punto fijo, $\set{F \circ \overset{n}{\dots} \circ F (x_0)}_{n \in \mathbb{N}} \longrightarrow x^{\ast}$.
   \end{itemize}
 
   En resumen, toda aplicación contractiva en un espacio métrico
@@ -112,85 +141,86 @@
   misma sobre cualquier punto convergen a él.
 \end{theorem}
 
+\subsection{Problema de valores iniciales}
 
-\subsection{Bases de entornos para Picard-Lindelöf}\label{base-entornos}
-
-Dados \(a,b\in \mathbb{R}^+\), definimos la siguiente base de entornos
-cerrados, que pueden interpretarse como la evolución en el tiempo de una bola
-cerrada de radio \(b\).
-\begin{align*}
-  {\cal R}_{a,b}(t_0,x_0)
-  &=
-    \left\{ (t,x) \in \mathbb{R}\times \mathbb{R}^d \mid |t - t_0| < a, \|x - x_0\| \leq b \right\}
-  \\&=
-    [t_0-a,t_0+a] \times \overline{B}(x_0,b).
-\end{align*}
-El espacio que forman las funciones \(\varphi \colon [t_0 - a, t_0 + a] \to \mathbb{R}^d\) cuya gráfica queda
-contenida en \({\cal R}_{a,b}\) es precisamente la bola cerrada de radio \(b\) centrada
-en la función constante \(\varphi_0(t) = x_0\), una vez que consideramos la norma
-del supremo.
-\begin{align*}
-  E_{a,b}(t_0,x_0) &=
-  \left\{ \varphi \in {\cal C}([t_0-a,t_0+a],\mathbb{R}^d) \;\middle|\; 
-    (t,\varphi(t)) \in {\cal R}_{a,b}(t_0,x_0)  \right\}
-  \\&= \left\{ \varphi \in {\cal C}([t_0-a,t_0+a],\mathbb{R}^d) \;\middle|\;
-    \forall t \in [t_0-a,t_0+a]: \|\varphi(t) - \varphi_0(t)\| \leq b \right\}
-  \\&= 
-  \overline{B}_{\infty}(\varphi_0,b).
-\end{align*}
-
-Al ser un subconjunto cerrado del espacio completo de funciones continuas
-acotadas con la norma del supremo, es un espacio métrico completo
-cuando consideramos la distancia inducida por la norma, \(d_{\infty}(\varphi,\psi) = \|\varphi - \psi\|_{\infty}\).
-
-Usaremos durante esta exposición las abreviaturas \(E_{a,b} = E_{a,b}(t_0,x_0)\)
-y \({\cal R}_{a,b} = {\cal R}_{a,b}(t_0,x_0)\).
-
-% TODO: Probar que forma una base de entornos.
-% TODO: Comprobar la norma del supremo sobre vectores y complitud.
-
-\subsection{Operador integral de Volterra}
-
-Sea un problema de valores iniciales para el campo $f \colon D \to \mathbb{R}^d$ con $D \subseteq \mathbb{R}\times\mathbb{R}^d$
-abierto, dado por
+Salvo que se especifique lo contrario, trabajaremos siempre en el contexto del
+siguiente problema de valores iniciales (PVI).  Fijado el abierto $D \subseteq \mathbb{R} \times \mathbb{R}^d$,
+consideramos el campo de vectores $f \colon D \to \RR^d$ continuo y un valor inicial $(t_0,x_0)$.
+El problema viene dado como
 \[\left.\begin{array}{l}
           x' = f(t,x), \\
           x(t_0) = x_0.
 \end{array}\right\}\]
-Usando que $D$ es abierto, para $a,b$ suficientemente pequeños tendremos ${\cal R}_{a,b}(t_0,x_0) \subset D$,
+
+\subsection{Bases de entornos para Picard-Lindelöf}\label{base-entornos}
+
+Dados $a,b\in \RR^+$, y fijada una norma cualquiera en $\RR^d$,
+definimos la siguiente base de entornos cerrados, que pueden interpretarse
+como la evolución en el tiempo de una bola cerrada de radio $b$. Por ser
+cerrado y acotado del espacio euclídeo, será un compacto.
+\begin{align*}
+  \eR_{a,b}(t_0,x_0)
+  &=  \set{(t,x) \in \RR\times \RR^d \midd  |t - t_0| < a, \|x - x_0\| \leq b}
+  \\&=  [t_0-a,t_0+a] \times \oB(x_0,b).
+\end{align*}
+El espacio que forman las funciones continuas \(\varphi \colon [t_0 - a, t_0 + a] \to \RR^d\) cuya gráfica queda
+contenida en ${\eR}_{a,b}$ es precisamente la bola cerrada de radio \(b\) centrada
+en la función constante $\varphi_0(t) = x_0$ una vez que consideramos la norma
+del supremo sobre la norma que habíamos fijado en $\RR^d$.
+\begin{align*}
+  E_{a,b}(t_0,x_0) &=
+  \set{\varphi \in {\cal C}([t_0-a,t_0+a],\RR^d) \midd
+    (t,\varphi(t)) \in {\eR}_{a,b}(t_0,x_0)}
+  \\&= \set{\varphi \in {\cal C}([t_0-a,t_0+a],\RR^d) \midd
+    \forall t \in [t_0-a,t_0+a]: \|\varphi(t) - \varphi_0(t)\| \leq b}
+  \\&=  
+  \overline{B}_{\infty}(\varphi_0,b).
+\end{align*}
+
+Al ser un subconjunto cerrado del espacio completo de funciones continuas
+acotadas con la norma del supremo, que forman un espacio de Banach, es un espacio métrico
+completo con la distancia inducida por la norma del máximo,
+\(d_{\infty}(\varphi,\psi) = \|\varphi - \psi\|_{\infty}\).
+
+Usaremos durante esta exposición las abreviaturas $E_{a,b} = E_{a,b}(t_0,x_0)$
+y ${\eR}_{a,b} = {\eR}_{a,b}(t_0,x_0)$.
+
+
+\subsection{Operador integral de Volterra}
+
+Usando que $D$ es abierto y $(t_0,x_0) \in D$, para cualesquiera $a,b \in \RR^+$ suficientemente pequeños
+tendremos ${\eR}_{a,b} \subset D$,
 y podremos definir el \textbf{operador de Volterra} asociado al problema en el
-espacio de funciones $V \colon E_{a,b} \to {\cal C}([t_0-a,t_0+a], \mathbb{R}^d)$, como
-\[
-  V(\varphi)(t) = x_0 + \int_{t_0}^t f(s,\varphi(s))\;ds.
-\]
-Nótese que un punto fijo $V(\varphi) = \varphi$ del operador sería una solución al problema
-de Volterra asociado al PVI original en el intervalo abierto $(t_0-a,t_0+a)$, lo
+espacio de funciones $V \colon E_{a,b} \to {\cal C}([t_0-a,t_0+a], \RR^d)$, como
+\[ V(\varphi)(t) = x_0 + \int_{t_0}^t f(s,\varphi(s))\;ds. \]
+Nótese que un punto fijo $V(\varphi) = \varphi$ del operador daría una solución al problema
+de Volterra asociado al PVI original en $[t_0-a,t_0+a]$ y particular en el intervalo abierto $(t_0-a,t_0+a)$, lo
 que equivaldría a ser solución del PVI en ese intervalo. Lo que haremos será
 buscar las condiciones en las que $V$ es un operador contractivo al que se
 puede aplicar el Teorema del punto fijo de Banach, y usarlo para asegurar
-la existencia y unicidad de solución del PVI\@. Empezaremos acotando el
+la existencia de solución del PVI\@. Empezaremos acotando el
 operador de Volterra desde una acotación de $f$. En particular, obtendremos $V(E) \subset E$
 cuando el valor de $a$ sea suficientemente pequeño.
 
 
 \begin{lemma}[sobre el operador de Volterra]\label{lema-operador-volterra}
-  Si \(M\geq 0\) cumple que \(\forall (t,x) \in {\cal R}_{a,b}: \|f(t,x)\| \leq M\), entonces
-  \(\|V(\varphi) - \varphi_0\|_{\infty} \leq Ma\) para cualquier \(\varphi \in E_{a,b}\).
+  Si $M\geq 0$ cumple que $\forall (t,x) \in \eR_{a,b}\colon \norm{f(t,x)} \leq M$, entonces
+  \(\|V(\varphi) - \varphi_0\|_{\infty} \leq Ma\) para cualquier \(\varphi \in E_{a,b}\),
+  donde $\varphi_0(t) = x_0$ es la función constantemente $x_0$.
 \end{lemma}
 \begin{proof}
-  Sabiendo que \(\varphi \in E_{a,b}\), tenemos para cualquier \(s \in [t_0-a,t_0+a]\) que \((s,\varphi(s)) \in {\cal R}_{a,b}\);
-  por lo que \(\|f(s,\varphi(s))\| \leq M\) y se tiene la siguiente cadena de desigualdades.
-  \[ 
-    \| V(\varphi) - \varphi_0 \|_{\infty} \leq
-    \left\| \int_{t_0}^t f(s,\varphi(s))\,ds \right\|_{\infty} \leq
-    M\| t - t_0 \|_{\infty} \leq
-    Ma.\qedhere
-  \]
+  Sabiendo que \(\varphi \in E_{a,b}\), tenemos para cualquier \(s \in [t_0-a,t_0+a]\)
+  que \((s,\varphi(s)) \in {\eR}_{a,b}\); por lo que \(\|f(s,\varphi(s))\| \leq M\) y
+  se tiene la siguiente cadena de desigualdades.
+  \[ \| V(\varphi) - \varphi_0 \|_{\infty} \leq
+    \norm{ \int_{t_0}^t f(s,\varphi(s))\,ds } \leq
+    M\abs{t - t_0} \leq
+    Ma.\qedhere\]
 \end{proof}
 
 \begin{corollary}[]\label{corolario-1-volterra}
-   Si \(M \geq 0\) cumple que \(\forall (t,x) \in {\cal R}_{a,b}: \|f(t,x)\| \leq M\) y además
-   \(Ma \leq b\), se tiene \(V(E_{a,b}) \subset E_{a,b}\).
+  Si \(M \geq 0\) cumple que \(\forall (t,x) \in {\eR}_{a,b}: \|f(t,x)\| \leq M\)
+  y además \(Ma \leq b\), se tiene \(V(E_{a,b}) \subset E_{a,b}\).
 \end{corollary}
 \begin{proof}
   Nótese que si leemos \(E_{a,b}\) como la bola cerrada \(\overline{B}_{\infty}(\varphi_0,b)\), tenemos
@@ -198,38 +228,38 @@ cuando el valor de $a$ sea suficientemente pequeño.
 \end{proof}
 
 
-
-Por otro lado, podremos probar que todas las soluciones de la ecuación
-de Volterra están contenidas en el espacio $E_{a,b}$.
+Por otro lado, podremos probar que, en estas condiciones,
+todas las soluciones de la ecuación de Volterra están contenidas
+en el espacio $E_{a,b}$.
 
 \begin{lemma}[]\label{lema-2-contr}
-  Para \(M \geq 0\) cumpliendo que \(\forall (t,x)\in {\cal R}_{a,b} : \|f(t,x)\| \leq M\) y además
-  \(Ma \leq b\); se tiene que si \(\varphi \colon [t_0-a,t_0+a] \to \mathbb{R}^d\) es solución
+  Para \(M \geq 0\) cumpliendo que \(\forall (t,x)\in {\eR}_{a,b} : \|f(t,x)\| \leq M\) y además
+  \(Ma \leq b\); se tiene que si \(\varphi \colon [t_0-a,t_0+a] \to \RR^d\) es solución
   de la ecuación de Volterra, entonces \(\varphi \in E_{a,b}\).
 \end{lemma}
 \begin{proof}
   Afirmamos que $\|\varphi-x_0\|_{\infty} \leq b$ en $[t_0-a,t_0+a]$. Sabemos que $\|\varphi(t_0) - x_0\| = 0$, luego
-  si no fuera cierto para algún $t_1 > t_0$ en el intervalo, por el \textbf{Lema del primer instante}
+  si no fuera cierto para algún $t_1 > t_0$ en el intervalo, por el \textit{Lema del primer instante},
   existiría un $\tau \in (t_0,t_0+a]$ tal que $b<\|\varphi(\tau) - x_0\|$ que sería el primero,
-  es decir, $\forall t \in [t_0,\tau)\colon \|\varphi(t)-x_0\| \leq b$. Pero entonces, $\forall t \in [t_0,\tau)\colon (t,\varphi(t)) \in {\cal R}_{a,b}$ y
+  es decir, $\forall t \in [t_0,\tau)\colon \|\varphi(t)-x_0\| \leq b$. Pero entonces, $\forall t \in [t_0,\tau)\colon (t,\varphi(t)) \in {\eR}_{a,b}$ y
   \[\begin{aligned}
    b < \|\varphi(\tau)-x_0\| &=
-   \left\| \int_{t_0}^t f(s,\varphi(s))\,ds \right\| \leq
-   \int_{t_0}^t \left\| f(s,\varphi(s)) \right\|\,ds \\&\leq
-   M|t-t_0| \leq
+   \norm{\int_{t_0}^\tau f(s,\varphi(s))\,ds} \leq
+   \int_{t_0}^\tau \norm{f(s,\varphi(s))} \,ds \\&\leq
+   M\abs{\tau-t_0} \leq
    Ma \leq b,
  \end{aligned}\]
   llegando a contradicción. Del mismo modo, si no fuera cierto para algún $t_1 < t_0$,
   aplicaríamos análogamente el lema del primer instante para obtener un $\tau \in [t_0-a,t_0)$
-  con $b < \| \varphi(\tau) - x_0 \|$ que cumpliría $\forall t \in (\tau,t_0]\colon \|\varphi(t)-x_0\| \leq b$. Pero entonces, de
-  nuevo,  
+  con $b < \| \varphi(\tau) - x_0 \|$ que cumpliría $\forall t \in (\tau,t_0]\colon \|\varphi(t)-x_0\| \leq b$.
+  Pero entonces, de nuevo,
   \[\begin{aligned}
    b < \|\varphi(\tau)-x_0\| &=
-   \left\| -\int_{t}^{t_0} f(s,\varphi(s))\,ds \right\| \leq
-   \int^{t_0}_t \left\| f(s,\varphi(s)) \right\|\,ds \\&\leq
-   M|t-t_0| \leq
+   \norm{ -\int_{\tau}^{t_0} f(s,\varphi(s))\,ds } \leq
+   \int^{t_0}_\tau \norm{ f(s,\varphi(s)) }\,ds \\&\leq
+   M|\tau-t_0| \leq
    Ma \leq b,
- \end{aligned}\]
+   \end{aligned}\]
   y habríamos llegado igualmente a contradicción.
 \end{proof}
 
@@ -240,7 +270,7 @@ da una condición de lipschitzianidad sobre el operador de Volterra.
 \begin{lemma}[]\label{lema-3-contr}
   Para $L \geq 0$ tal que
   \[
-    \forall (t,x),(t,y) \in {\cal R}_{a,b}\colon
+    \forall (t,x),(t,y) \in {\eR}_{a,b}\colon
     \| f(t,x) - f(t,y) \| \leq L \|x-y\|, 
   \]
   se tiene $\|V(\varphi) - V(\psi)\|_\infty \leq aL\|\varphi - \psi\|_\infty$ para cualesquiera $\varphi,\psi \in E_{a,b}$.
@@ -249,35 +279,31 @@ da una condición de lipschitzianidad sobre el operador de Volterra.
   Para $t \in [t_0-a,t_0+a]$, si suponemos $t > t_0$ tenemos
   \[\begin{aligned}
   \| V(\varphi)(t) - V(\psi)(t) \| &=
-  \left\| \int_{t_0}^t \left( f(s,\varphi(s)) - f(s,\psi(s)) \right)\,ds \right\| \\&\leq
-  \int_{t_0}^t \left\|  f(s,\varphi(s)) - f(s,\psi(s)) \right\|\,ds \\&\leq
-  \int_{t_0}^t L\left\| \varphi(s)-\psi(s) \right\|\,ds \\&\leq
+  \norm{ \int_{t_0}^t \left( f(s,\varphi(s)) - f(s,\psi(s)) \right)\,ds } \\&\leq
+  \int_{t_0}^t \norm{  f(s,\varphi(s)) - f(s,\psi(s)) }\,ds \\&\leq
+  \int_{t_0}^t L\norm{ \varphi(s)-\psi(s) }\,ds \\&\leq
   La\|\varphi-\psi\|_{\infty}.
   \end{aligned}\]
 En el caso $t = t_0$, tendremos $\|V(\varphi)(t) - V(\psi)(t)\| = 0$;
 y en el caso $t < t_0$, realizaremos un razonamiento análogo al anterior
-pero ahora notando que
+pero ahora notando en el paso intermedio que
 \[\begin{aligned}
-  \left\| - \int_{t_0}^t  (f(s,\varphi(s)) - f(s,\psi(s))) \,ds \right\| \leq
-  \int_{t}^{t_0} \left\|  f(s,\varphi(s)) - f(s,\psi(s)) \right\|\,ds.
+  \norm{-\int_{t_0}^t  (f(s,\varphi(s)) - f(s,\psi(s))) \,ds} \leq
+  \int_{t}^{t_0} \norm{f(s,\varphi(s)) - f(s,\psi(s))}\,ds.
 \end{aligned}\]
-Así, hemos acotado la diferencia en todos los casos y por tanto hemos
-acotado la norma del supremo.
+Así, habremos acotado la diferencia en todos los casos con una cota independiente
+de $t$ y por tanto hemos acotado la norma del supremo.
 \end{proof}
 
-Tomando así un $a$ suficientemente pequeño, podremos obtener una primera
+Tomando ahora un $a$ suficientemente pequeño, podremos obtener una primera
 aplicación del Teorema de Banach a nuestro caso particular.
 
 \begin{proposition}\label{proposicion-1-contr}
 Sean $M,L \geq 0$ tales que
-\[
-\forall (t,x) \in R_{a,b}\colon \|f(t,x)\| \leq M,
-\]
+\[\forall (t,x) \in R_{a,b}\colon \|f(t,x)\| \leq M,\]
 y que
-\[
-\forall (t,x),(t,y) \in {\cal R}_{a,b}\colon \|f(t,x)-f(t,y)\| \leq L\|x-y\|.
-\]
-Si $aM\leq b$ y $aL \leq 1$, entonces existe una única $\varphi\colon [t_0-a,t_0+a] \to \mathbb{R}^d$
+\[\forall (t,x),(t,y) \in {\eR}_{a,b}\colon \|f(t,x)-f(t,y)\| \leq L\|x-y\|.\]
+Si $aM\leq b$ y $aL \leq 1$, entonces existe una única $\varphi\colon [t_0-a,t_0+a] \to \RR^d$
 solución al problema de Volterra.
 \end{proposition}
 \begin{proof}
@@ -286,7 +312,8 @@ y aplicando el Lema~\ref{lema-3-contr} a $L$, obtenemos
 \[
 \| V(\varphi) - V(\psi) \|_{\infty} \leq aL\|\varphi-\psi\|_{\infty}.
 \]
-Ahora, como $aL < 1$, por el Teorema del punto fijo de Banach, $\exists! \varphi \in E_{a,b} \colon V(\varphi) = \varphi$,
+Ahora, como $aL < 1$, por el Teorema del punto fijo de Banach en $E_{a,b}$, que es completo,
+$\exists! \varphi \in E_{a,b} \colon V(\varphi) = \varphi$
 solución de Volterra. Si hubiera otra solución $\psi$ en mismo intervalo usaríamos
 el Lema~\ref{lema-2-contr} para tener $\psi \in E_{a,b}$, y como el Teorema de Banach nos
 da unicidad en ese espacio, $\varphi = \psi$.
@@ -295,32 +322,33 @@ da unicidad en ese espacio, $\varphi = \psi$.
 Nuestro siguiente objetivo será retirar la hipótesis $aL < 1$, para lo que
 utilizaremos la norma de Bielecki.
 
-\section{Norma de Bielecki}
+\subsection{Norma de Bielecki}
 
-La \textbf{norma de Bielecki} para una constante \(R > 0\) se define en el
-espacio \(E_{a,b}\) como
+La \textbf{norma de Bielecki}, para una constante \(R > 0\) y una norma fijada
+en $\RR^d$, se define en el espacio \(E_{a,b}\) como
 \[\|\varphi\|_B = \max_{t \in [t_0-a,t_0+a]} e^{-R|t-t_0|}\|\varphi(t)\|.\]
 
-\begin{remark}[de equivalencia con la norma del máximo]
+\begin{remark}[equivalencia con la norma del máximo]
   La norma de Bielecki es equivalente a la norma del máximo. Explícitamente,
   se tiene que
   \[
     \|\varphi\|_B = \max_{t \in [t_0-a,t_0+a]} e^{-R|t-t_0|} \|\varphi(t)\| \leq
      e^{-Ra} \|\varphi\|_\infty
    \]
-   y que
-   \[
-     \|\varphi\|_\infty =  \max_{t \in [t_0-a,t_0+a]} e^{R|t-t_0|}e^{-R|t-t_0|} \|\varphi(t)\| \leq
-     e^{Ra}\|\varphi\|_B.
-     \]
+  y que
+  \[
+   \|\varphi\|_\infty =  \max_{t \in [t_0-a,t_0+a]} e^{R|t-t_0|}e^{-R|t-t_0|} \|\varphi(t)\| \leq
+   e^{Ra}\|\varphi\|_B.
+  \]
 \end{remark}
 
 \begin{lemma}[versión del lema 3 con la norma de Bielecki]\label{lema-4-contr}
   Para \(L \geq 0\) tal que
   \[
-    \forall (t,x),(t,y) \in {\cal R}_{a,b} : \| f(t,x) - f(t,y) \| \leq L\|x-y\|,
+    \forall (t,x),(t,y) \in {\eR}_{a,b} : \| f(t,x) - f(t,y) \| \leq L\|x-y\|,
   \]
-  se tiene \(\|V(\varphi)-V(\psi)\|_B \leq \frac{L}{R} \|\varphi - \psi\|_B\) para cualesquiera $\varphi,\psi \in E_{a,b}$.
+  se tiene \(\|V(\varphi)-V(\psi)\|_B \leq \frac{L}{R} \|\varphi - \psi\|_B\)
+  para cualesquiera $\varphi,\psi \in E_{a,b}$.
 \end{lemma}
 \begin{proof}
 Nótese primero que $\|V(\varphi)(t_0) - V(\psi)(t_0)\| = 0$. Fijado un $t > t_0$
@@ -335,8 +363,8 @@ L \norm{\varphi - \psi}_{B} \int_{t_0}^t e^{R\abs{s-t_0}}\,ds \leq
 \frac{L}{R} \norm{\varphi - \psi}_{B} \left(e^{R\abs{t-t_0}} - 1\right) \\&\leq
 \frac{L}{R} \norm{\varphi - \psi}_{B} e^{R\abs{t-t_0}}
 \end{aligned}\]
-ya que $e^{R|t-t_0|} > 0$. Si fijamos un $t < t_0$ podemos repetir el mismo razonamiento
-simplemente notando al principio que
+usando en el último paso que $e^{R|t-t_0|} > 1$. Si fijamos un $t < t_0$
+podemos repetir el mismo razonamiento simplemente notando al principio que
 \[
 \norm{- \int_{t_0}^t f(s,\varphi(s)) - f(s,\psi(s))\,ds} \leq
 \int_{t}^{t_0} \norm{f(s,\varphi(s)) - f(s,\psi(s))}\,ds.
@@ -345,6 +373,9 @@ Dividiendo y uniendo los tres casos, llegamos a que
 $\|V(\varphi) - V(\psi)\|_{B} \leq \frac{L}{R} \norm{\varphi - \psi}_{B}$.
 \end{proof}
 
+Con esto obtenemos un enunciado similar al de nuestra primera proposición
+pero habiendo eliminado la hipótesis que acotaba $aL$.
+
 \begin{proposition}\label{proposicion-2-contr}
 Sean $M,L \geq 0$ tales que
 \[
@@ -352,9 +383,9 @@ Sean $M,L \geq 0$ tales que
 \]
 y que
 \[
-\forall (t,x),(t,y) \in {\cal R}_{a,b}\colon \|f(t,x)-f(t,y)\| \leq L\|x-y\|.
+\forall (t,x),(t,y) \in {\eR}_{a,b}\colon \|f(t,x)-f(t,y)\| \leq L\|x-y\|.
 \]
-Si $aM\leq b$, entonces existe una única $\varphi\colon [t_0-a,t_0+a] \to \mathbb{R}^d$
+Si $aM\leq b$, entonces existe una única $\varphi\colon [t_0-a,t_0+a] \to \RR^d$
 solución al problema de Volterra.
 \end{proposition}
 \begin{proof}
@@ -362,7 +393,8 @@ solución al problema de Volterra.
   obtener que $V$ es contractiva en el espacio métrico $E_{a,b}$ con la
   norma de Bielecki. Repitiendo el razonamiento de la Proposición~\ref{proposicion-1-contr},
   obtenemos que $V(E_{a,b}) \subset E_{a,b}$ y que existirá un punto
-  fijo de $V$.
+  fijo de $V$ por el Teorema de Banach en $E_{a,b}$ que sigue siendo
+  completo bajo la norma de Bielecki, equivalente a la norma del supremo.
 \end{proof}
 
 \section{Teorema de Picard-Lindelöf}
@@ -370,34 +402,30 @@ solución al problema de Volterra.
 \subsection{Teorema de Picard-Lindelöf}
 
 \begin{theorem}[Picard-Lindelöf local]\label{picard-lindelof-local}
-  Dado el siguiente problema de valores iniciales con \(D \subset \mathbb{R}\times \mathbb{R}^d\) dominio,
-  \((t_0,x_0) \in D\) y \(f \colon D \to \mathbb{R}^N\) continua,
-  \[\left\{\begin{array}{l}
-             x' = f(t,x), \\
-             x(t_0) = x_0;
-           \end{array}\right.\]
-  si \(f\) es localmente lipschitziana respecto de \(x\) en un entorno ${\cal U}$ de \((t_0,x_0)\),
+  Si \(f\) es localmente lipschitziana respecto de \(x\) en un entorno ${\cal U}$ de \((t_0,x_0)\),
   entonces existe solución al problema de valores iniciales y es
   localmente única.
 \end{theorem}
 \begin{proof}
-  Por hipótesis sabemos que existe una constante de Lipschitz $L \in \mathbb{R}^+$
+  Por hipótesis sabemos que existe una constante de Lipschitz $L \in \RR^+$
   tal que
   \[ \forall (t,x),(t,y) \in {\cal U}\colon \| f(t,x) - f(t,y) \| \leq L\|x-y\|. \]
-  Usando que la familia de entornos ${\cal R}_{a,b}$ definida en la Sección~\ref{base-entornos}
-  forma una base de entornos, sabemos que existen $\overline{a},b \in \mathbb{R}^+$ tales que ${\cal R}_{\overline{a},b}(t_0,x_0) \subseteq {\cal U}$.
-  Ahora, $\restr{f}{{\cal R}_{\overline{a},b}}$ será globalmente lipschitziana, luego continua, y podremos
-  aplicar el Teorema de Weierstrass para obtener la cota
-  \[M = \max_{(t,x) \in {\cal R}_{\overline{a},b}} \|f(t,x)\|.\]
-  Definimos ahora $a = \min\left\{ \overline{a}, b/M, 1/L \right\}$ y, sabiendo que ${\cal R}_{a,b} \subseteq {\cal R}_{\overline{a},b}$, podemos aplicar
+  Usando que la familia de entornos ${\eR}_{a,b}$ definida en la Sección~\ref{base-entornos}
+  forma una base de entornos, sabemos que existen $\overline{a},b \in \RR^+$ tales que ${\eR}_{\overline{a},b}(t_0,x_0) \subseteq {\cal U}$.
+  Ahora, $\restr{f}{{\eR}_{\overline{a},b}}$ será globalmente lipschitziana respecto de $x$;
+  siendo continua, podremos aplicar el Teorema de Weierstrass para obtener la cota
+  \[M = \max_{(t,x) \in {\eR}_{\overline{a},b}} \|f(t,x)\|.\]
+  Definimos ahora $a = \min\left\{ \overline{a}, b/M, 1/L \right\}$ y, sabiendo que ${\eR}_{a,b} \subseteq {\eR}_{\overline{a},b}$, podemos aplicar
   la Proposición~\ref{proposicion-2-contr} para obtener que existe una solución
-  localmente única $\varphi \colon [t_0-a,t_0+a] \to \mathbb{R}^d$ a la ecuación de Volterra, que en el
-  abierto $\varphi \colon I = (t_0-a,t_0+a) \to \mathbb{R}^d$ será solución del PVI\@. Nótese sin embargo que
-  todavía no hemos probado la unicidad local.
+  localmente única $\varphi \colon [t_0-a,t_0+a] \to \RR^d$ a la ecuación de Volterra, que en el
+  abierto $\varphi \colon I = (t_0-a,t_0+a) \to \RR^d$ será solución del PVI\@. Nótese sin embargo que
+  todavía no hemos probado la unicidad local para el PVI\@.
   
-  Sea ahora $\psi \colon J \to \mathbb{R}^d$ otra solución en un intervalo abierto conteniendo
-  a $t_0$; por continuidad existe un $\delta' < a$ tal que para $|t - t_0| < \delta'$ se tiene
-  $\|\psi(t) - x_0\| \leq b$. Como ambos intervalos son abiertos y $t_0 \in I \cap J$, existirá
+  Sea ahora $\psi \colon J \to \RR^d$ otra solución en un intervalo abierto conteniendo
+  a $t_0$ (si estuviera definida en un intervalo cerrado con extremo en $t_0$ podríamos
+  concatenarla con $\varphi$ y seguir probando unicidad); por continuidad existe un $\delta' < a$
+  tal que para $|t - t_0| < \delta'$ se tiene $\|\psi(t) - x_0\| \leq b$. Como ambos
+  intervalos son abiertos y $t_0 \in I \cap J$, existirá
   un entorno de $t_0$ contenido en la intersección y podremos tomar un
   $\delta < \delta'$ suficientemente pequeño para asegurar que $(t_0-\delta, t_0+\delta) \subset I \cap J$.
   Tendríamos así dos soluciones al problema de Volterra $\psi,\varphi \in E_{\delta,b}(t_0,x_0)$,
@@ -407,17 +435,11 @@ solución al problema de Volterra.
 
 
 \begin{theorem}[Picard-Lindelöf global]\label{picard-lindelof-global}
-  Dado el siguiente problema de valores iniciales con \(D \subset \mathbb{R} \times \mathbb{R}^d\) dominio,
-  \((t_0,x_0) \in D\) y \(f \colon D \to \mathbb{R}^N\) continua,
-  \[\left\{\begin{array}{l}
-                  x' = f(t,x), \\
-                  x(t_0) = x_0;
-                \end{array}\right.\] 
-  si \(f\) es localmente lipschitziana respecto de \(x\), entonces existe solución
+  Si \(f\) es localmente lipschitziana respecto de \(x\), entonces existe solución
   al problema de valores iniciales y es la única solución maximal.
 \end{theorem}
 \begin{proof}
-  Cualquier $(t_0,x_0)$ tiene un entorno (el dominio) donde podemos aplicar
+  Cualquier $(t_0,x_0)$ tiene un entorno en el dominio donde podemos aplicar
   la versión local del Teorema~\ref{picard-lindelof-local}. Finalmente, sabemos
   que la propiedad de unicidad local bajo cualesquiera condiciones iniciales
   implica la unicidad global bajo cualquier condición inicial.
@@ -427,29 +449,46 @@ solución al problema de Volterra.
 
 \subsection{Iterantes de Picard}
 
-La segunda consecuencia que obtenemos del Teorema de Banach es la posibilidad
-de aproximar la solución del PVI mediante la aplicación sucesiva del operador
-de Volterra en los casos en los que hemos comprobado que es contractivo.
+La segunda consecuencia que obtenemos del Teorema de Banach en estas
+condiciones es la posibilidad de aproximar la solución del PVI
+mediante la aplicación sucesiva del operador de Volterra en los casos
+en los que hemos comprobado que es contractivo.
 
 \begin{theorem}[Iterantes de Picard]
-  Supongamos que tenemos constantes \(a,b,M,L > 0\) y un dominio \(D \subset \mathbb{R} \times \mathbb{R}^d\)
+  Supongamos que tenemos constantes \(a,b,M,L > 0\) y un dominio \(D \subset \RR \times \RR^d\)
   cumpliendo
   \begin{itemize}
     \item \(a \leq b/M\),
-    \item \({\cal R}_{a,b} \subset D\),
-    \item \(\forall (t,x) \in {\cal R}_{a,b}\colon \|f(t,x)\| \leq M\),
-    \item \(\forall (t,x),(t,y) \in {\cal R}_{a,b} \colon \|f(t,x)-f(t,y)\| \leq L \|x-y\|\).
+    \item \({\eR}_{a,b} \subset D\),
+    \item \(\forall (t,x) \in {\eR}_{a,b}\colon \|f(t,x)\| \leq M\),
+    \item \(\forall (t,x),(t,y) \in {\eR}_{a,b} \colon \|f(t,x)-f(t,y)\| \leq L \|x-y\|\).
   \end{itemize}
   Entonces la sucesión de funciones definida recursivamente mediante aplicaciones
   sucesivas del operador integral de Volterra
   \begin{itemize}
     \item \(\phi_0(t) = x_0\),
-    \item \(\phi_{k+1}(t) = x_0 + \int_{t_0}^t f(s,\phi_k(s))\,ds\),
+    \item \(\displaystyle \phi_{k+1}(t) = x_0 + \int_{t_0}^t f(s,\phi_k(s))\,ds\),
   \end{itemize}
   está bien definida y converge uniformemente hacia la única solución
   de la ecuación integral de Volterra. Esta sucesión, \(\left\{ \phi_n \right\}\), se conoce
   como sucesión de \textbf{iterantes de Picard}.
 \end{theorem}
+
+\begin{remark}[ejemplo de iterantes de Picard]
+  Consideremos $f(t,x) = 2tx$ con $x(0) = 1$ en el dominio $D = \RR\times\RR$, y tomemos
+  las constantes $a = 1/2$, $b=1$, $M=2$, $L=1$, para las que
+  podemos comprobar que se está en condiciones de aplicar los
+  iterantes de Picard. Obtenemos
+  \begin{itemize}
+  \item $\phi_0(t) = 1$,
+  \item $\displaystyle\phi_1(t) = 1 + \int_{0}^t 2s\,ds = 1 + t^2$,
+  \item $\displaystyle\phi_2(t) = 1 + \int_{0}^t 2s(1 + s^2) \,ds = 1 + t^2 + \frac{1}{2}s^4$,
+  \item $\displaystyle\phi_3(t) = 1 + \int_{0}^t 2s(1 + s^2 + \frac{1}{2}s^4) \,ds = 1 + t^2 + \frac{1}{2}s^4 + \frac{1}{6} s^6$,
+  \end{itemize}
+  que podemos ver que se van aproximando a la serie de Taylor de
+  la exponencial evaluada en $t^2$, como sería esperable tras
+  resolver la ecuación por variables separadas.
+\end{remark}
 
 \subsection{Contraejemplo de Müller}
 
@@ -458,7 +497,7 @@ El \textbf{contraejemplo de Müller} (1927) considera el PVI
   x' = f(t,x) \\
   x(0) = 0
 \end{array}\right.\]
-para \(f \colon \mathbb{R} \times \mathbb{R} \to \mathbb{R}\) una función definida a trozos como
+para \(f \colon \RR \times \RR \to \RR\) una función definida a trozos como
 \[ f(t,x) = \left\{
     \begin{array}{ll}
       0 & \mbox{ si } t \leq 0, \\
@@ -469,6 +508,38 @@ para \(f \colon \mathbb{R} \times \mathbb{R} \to \mathbb{R}\) una función defin
 Este es un PVI con una solución única a la que no se aproximará
 la sucesión de iterantes de Picard, ni siquiera en ninguna de sus
 parciales.
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+  declare function={
+    func(\t,\x)= (\t>0) * (
+      (\x<0) *               (2*\t) +
+      and(\x>=0, \x<\t*\t) * (2*\t - 4*\x/\t) +
+      (\x>\t*\t) *           (-2*\t));
+  }
+  ]
+\begin{axis}[
+  title={Solución del contraejemplo de Müller},
+  domain=-2:4,
+  view={0}{90},
+  axis background/.style={fill=white},
+  ]
+  \addplot[blue, dashed, samples=101, domain=-2:2.05]{(x>0) * x^2};
+  \addplot[blue, dashed, samples=101, domain=-2:4]{0};  
+  \addplot3[blue,
+     quiver={
+      u={1  / sqrt( func(x,y)^2 + 1 )},
+      v={func(x,y) / sqrt( func(x,y)^2 + 1 )},
+      scale arrows=0.3,
+     },
+     -stealth,samples=15]
+     {exp(0-x^2-y^2)*x};
+  \addplot[samples=101, domain=-2:3.6]{(x>0) * x^2/3};     
+\end{axis}
+\end{tikzpicture}
+\end{figure}
 
 Podemos comprobar que tiene una única solución aplicando el Teorema
 de Unicidad de Peano. En efecto, la unicidad en el futuro se obtiene
@@ -519,6 +590,291 @@ a la solución ni siquiera en ninguna de sus parciales.
 
 \section{Teorema de Cauchy-Peano}
 
-\bibliographystyle{alpha}
+El Teorema de Cauchy-Peano nos asegura la existencia de solución a
+un PVI exigiendo simplemente la continuidad.
+
+En esta sección usaremos el Teorema de Stone-Weierstrass, que permite
+aproximar uniformemente funciones continuas en un compacto por una familia
+de funciones a la que sólo le pedimos algunas propiedades algebraicas.
+Aunque sólo necesitaremos la aproximación mediante familias de polinomios
+en varias variables, probaremos la versión más general, que abstrae las
+consideraciones particulares sobre los polinomios a la estructura de
+\textit{álgebra} de funciones.
+
+\subsection{Teorema de Stone-Weierstrass}
+
+Una familia de funciones reales ${\cal A}$ sobre un conjunto $X$ se dice
+\textbf{álgebra} si es cerrada para la suma y producto de funciones y
+para el producto por escalares. 
+
+Si consideramos el conjunto de funciones $X \to \mathbb{R}$ como un
+espacio métrico con la norma del supremo, la convergencia es la
+convergencia uniforme. En el caso en el que todas las funciones
+de ${\cal A}$ están acotadas, podemos comprobar que la clausura bajo esta
+norma de ${\cal A}$ es de nuevo un \textbf{álgebra}; de hecho, tenemos que para
+$\lambda \in \mathbb{R}$ y $p_n,q_n \in {\cal A}$ con $p_n \overset{c.u.}\longrightarrow p$ y $q_n \overset{c.u.}\longrightarrow q$,
+
+\begin{itemize}
+\item $p_n + q_n \overset{c.u.}\longrightarrow p + q$, ya que
+   \[
+   \norm{(p_n + q_n) - (p + q)}_{\infty} \leq
+   \norm{p_n - p}_{\infty} + \norm{q_n - q}_{\infty} \longrightarrow 0;
+   \]
+\item $p_nq_n \overset{c.u.}\longrightarrow pq$ usando que todas ellas estarán acotadas y
+      que $\norm{p}_{\infty} \leq \sup \left\{ \norm{p_n}_{\infty} \right\}$, que existe por la convergencia,
+   \[
+   \norm{p_nq_n - pq}_{\infty} \leq
+   \norm{p_n - p}_{\infty}\sup\set{\norm{q_n}_{\infty}} + 
+   \sup \left\{ \|p_n\|_{\infty} \right\} \norm{q_n-q}_{\infty} \longrightarrow 0;
+   \]
+\item y $\lambda p_n \overset{c.u.}\longrightarrow \lambda p$, ya que $\norm{\lambda p_n}_{\infty} \leq \lambda\norm{p_{\infty}} \longrightarrow 0$.
+\end{itemize}
+
+Decimos que el álgebra \textbf{separa puntos} si para cada par $x,y \in X$
+existe $p \in {\cal A}$ tal que $p(x) \neq p(y)$. Decimos que no se \textbf{desvanece}
+en ningún punto si para cada $x \in X$ hay una $p \in {\cal A}$ tal que $p(x) \neq 0$.
+Cuando un álgebra separa puntos y no se devanece, dados dos reales
+$\lambda,\mu \in \mathbb{R}$ y dos puntos $x,y \in X$ existe una $p \in {\cal A}$ que separa
+los puntos y dos $q_x,q_y \in {\cal A}$, con $q_x(x) \neq 0$ y $q_y(y) \neq 0$; entonces
+podemos definir
+\[
+a = pq_x - p(y)q_x, \quad
+b = pq_y - p(x)q_y, 
+\]
+
+que cumplen $a(x) \neq 0$ y $b(y) \neq 0$, $b(x) = a(y) = 0$,; así, existe
+siempre una función $r$ que vale exactamente $\lambda$ en $x$ y $\mu$ en $y$,
+definida como
+\[
+r = \frac{\lambda b}{b(x)} + \frac{\mu a}{a(y)}.
+\]
+
+
+\begin{theorem}[de Stone-Weierstrass]\label{stone}
+Sea ${\cal A}$ un álgebra de funciones continuas sobre un espacio
+compacto $K$ que separa puntos y no se desvanece en ninguno.
+La clausura bajo la norma del supremo es entonces ${\cal C}(K,\mathbb{R})$,
+el conjunto de todas las funciones continuas reales sobre $K$.
+\end{theorem}
+\begin{proof}
+  Nuestro \textit{primer paso} será aproximar uniformemente la raíz cuadrada
+por una sucesión de polinomios. La serie de Taylor de la raíz
+cuadrada en $t = 1$,
+\[\sum_{n\geq 0} \lambda_n(t-1)^n =
+\sum_{n\geq 0} \frac{(t - 1)^n}{n!} \prod_{k=1}^n \left( \frac{3}{2} - k \right),
+\]
+tiene coeficientes $\lambda_n$ tales que
+\[
+\abs{\frac{\lambda_{n+1}}{\lambda_n}} = 
+\abs{\frac{1/2 - n}{n+1}} \to 1,
+\qquad
+n \left( 1 - \abs{\frac{\lambda_{n+1}}{\lambda_n}} \right) \to 3/2 > 1;
+\]
+por lo que sabemos por criterio de Raabe que $\sum_{n \geq 1} \lambda_n$ es absolutamente
+convergente y la suma converge para $t \in [0,1]$. Podemos aproximar $\psi(t) = \sum_{n=0}^{\infty}\lambda_n(t-1)^n$,
+en $t \in [0,1]$ uniformemente por polinomios usando que
+\[
+\abs{\psi(t) - \sum_{n=0}^{m} \lambda_n(t-1)^n} \leq
+\sum_{n=m+1}^{\infty} \abs{\lambda_n},
+\quad\mbox{ para } t \in [0,1].
+\]
+Si ahora consideramos sus derivadas, usando convergencia uniforme para
+intercambiar derivada y suma infinita, tenemos la ecuación diferencial
+\[\begin{aligned}
+\psi'(t) &=
+\sum_{n=0}^\infty n\lambda_n(t-1)^{n-1} =
+\sum_{n=1}^\infty \left(\frac{1}{2} - (n-1)\right)\lambda_{n-1}(t-1)^{n-1} \\&=
+\frac{1}{2}\psi(t) - (t-1)\psi'(t),
+\end{aligned}\]
+con $\psi(1) = 1$, que se resuelve como $\psi(t) = \sqrt{t}$ en $(0,1]$ y
+se extiende únicamente por continuidad a $[0,1]$.
+
+Nuestro \textit{segundo paso} utiliza lo anterior para dar estructura de
+retículo a $\overline{{\cal A}}$.
+Dada $p \in \overline{{\cal A}}$, veamos que $\abs{p} \in {\overline{\cal A}}$. Al ser $K$ compacto, $p$ está acotado.
+Dado un $\varepsilon > 0$, como $p(t)/\norm{p}_{\infty} \leq 1$, usamos la aproximación por polinomios
+de la raíz cuadrada para existir algún $n$ tal que
+\[
+\abs{\sqrt{\left(\frac{p(x)}{\norm{p}_{\infty}}\right)^2} -
+\sum_{i=1}^n \lambda_i \left(\frac{p(x)}{\norm{p}_{\infty}}-1\right)^i} < \varepsilon;
+\quad
+\mbox{ para } x \in K.
+\]
+Y desde aquí deducimos que $\abs{p}/\norm{p}_{\infty} \in \overline{{\cal A}}$ por
+poder aproximarse uniformemente por sumas y productos de funciones en el álgebra,
+luego $\abs{p} \in \overline{\cal A}$.
+
+El ser cerrada para el valor absoluto hace que la clausura
+sea un retículo con el orden parcial inducido punto a punto
+desde los reales. En otras palabras, dados $p,q\in \overline{{\cal A}}$,
+\[
+\min(p,q) = \frac{p + q}{2} - \frac{\abs{p-q}}{2},\quad\text{y}\quad
+\max(p,q) = \frac{p + q}{2} + \frac{\abs{p-q}}{2},
+\]
+pertenecen a $\overline{\cal A}$.
+
+Nuestro \textit{tercer paso} toma $f \in {\cal C}(K,\mathbb{R})$ y un $\varepsilon > 0$.
+Por ser ${\cal A}$ separable y no desvanecerse, tenemos para cada $z,y \in K$ una
+función $s_z \in {\cal A}$ tal que $s_{z}(y) = f(y)$ y además, $s_{z}(z) = f(z)$.
+Por continuidad de $s_z$, existe un abierto $z \in J_z$ tal que
+\[
+\forall x \in J_z\colon\quad s_z(x) > f(x) - \varepsilon.
+\]
+Como $K = \bigcup_{z \in K} J_z$ es compacto, existen $z_1,\dots,z_n$ tales que
+$K = J_{z_1} \cup \dots \cup J_{z_n}$; y podemos tomar $r_y = \max(s_{z_1},\dots,s_{z_n})$.
+De nuevo, por continuidad de $r_y$, existe un abierto $y \in H_y$
+tal que
+\[
+\forall x \in H_y\colon\quad r_y(x) < f(x) + \varepsilon.
+\]
+Usando compacidad de $K$, existen $y_1,\dots,y_n$ con $K = H_{y_1} \cup \dots \cup H_{y_m}$;
+y podemos tomar $h~=~\min(r_{y_1},\dots,r_{y_m}) \in \overline{{\cal A}}$; que cumple
+que $f(x) - \varepsilon < h(x) < f(x) + \varepsilon$, y por tanto $\norm{f - h}_{\infty} < \varepsilon$.
+
+\end{proof}
+
+\subsection{Teorema de Cauchy-Peano}
+
+\begin{lemma}[de aproximación por localmente lipschitzianas]\label{aprox-ll}
+  Sea $D \subseteq \RR \times \RR^d$ abierto con $(t_0,x_0) \in D$ y $f \colon D \to \RR$ una función continua.
+  Para \(M \geq 0\) cumpliendo que \(\forall (t,x)\in {\eR}_{a,b}(t_0,x_0) : \|f(t,x)\| \leq M\), existe
+  una sucesión de funciones $f_n \colon D \to \mathbb{R}^d$ localmente lipschitzianas
+  tales que
+  \[
+    \forall n \in \ZZ^+\colon
+    \forall (t,x) \in {\eR}_{a,b}\colon
+    \norm{f_n(t,x)} \leq M,
+  \]
+  cumpliendo que $f_n$ converge uniformemente a $f$ en ${\eR}_{a,b}$.
+\end{lemma}
+\begin{proof}
+  Aplicamos el Teorema de Stone-Weierstrass (Teorema~\ref{stone}) en
+  el compacto ${\eR}_{a,b}$, al álgebra de los polinomios en varias variables
+  \[
+    {\cal A} =
+    \left\{ \sum_{(i_1,\dots,i_n) \in \NN^{d+1}}
+      \left(\lambda_{i_1,\dots,i_n} \prod_{j=1}^n x_j^{i_j}\right)
+      \midd
+      \lambda_{i_1,\dots,i_n} \in \RR
+    \right\},
+  \]
+  que es cerrada para la suma, el producto por escalares y el producto
+  de funciones y que además contiene funciones que separan puntos (con las
+  lineales basta) y funciones que no se desvanecen en cada uno de ellos.
+
+  Trabajando en ${\eR}_{a,b}$ compacto con la norma del supremo, podemos aproximar
+  uniformemente la función $f$ por polinomios tanto como queramos, así que
+  tomamos $\set{p_n}$ tales que $\norm{p_n - f}_\infty < 1/n$. Nótese que cumplen $\norm{p_n}_\infty \leq M + 1/n$,
+  por lo que podemos definir la siguiente sucesión de funciones, que son
+  localmente lipschitzianas por ser polinomios,
+  \[
+    f_n = \frac{M}{M+1/n}p_n;\quad\mbox{ cumpliendo }\quad
+    \norm{f_n}_\infty \leq M.
+  \]
+  Y tenemos finalmente la siguiente aproximación uniforme,
+  \[
+    \norm{\frac{M}{M + 1/n} p_n - f}_\infty \leq
+    \norm{\frac{1/n}{M + 1/n}p_n}_\infty + \norm{p_n - f}_\infty \leq
+    \frac{1}{n} + \frac{nM}{nM+1} \to 0.\qedhere
+  \]
+\end{proof}
+
+\begin{proposition}\label{propcauchypeano}
+  Sea $D \subseteq \RR \times \RR^d$ abierto con $(t_0,x_0) \in D$ y $f \colon D \to \RR$ una función continua.
+  Para \(M \geq 0\) cumpliendo que \(\forall (t,x)\in {\eR}_{a,b}(t_0,x_0) : \|f(t,x)\| \leq M\) y
+  que $aM \leq b$, existe una función $\varphi \colon [t_0-a,t_0+a] \to \RR^d$ que es solución
+  del problema de valores iniciales asociado.
+\end{proposition}
+\begin{proof}
+  Por el Lema~\ref{aprox-ll}, tenemos una aproximación en ${\eR}_{a,b}$ por localmente
+  lipschitzianas $f_n \overset{c.u.}\longrightarrow f$, cumpliendo $f_n(x) \leq M$ en ${\eR}_{a,b}$, donde
+  son además lipschitzianas por compacidad. Si consideramos la familia de ecuaciones
+  de Volterra asociadas,
+  \[
+    x(t) = x_0 + \int_{t_0}^t f_n(s,x(s))\,ds,
+  \]
+  sabemos por la Proposición~\ref{proposicion-2-contr} que existe una sucesión
+  de soluciones $\varphi_n \colon [t_0-a,t_0+a]\to\RR^d$ a cada uno de los problemas de Volterra,
+  y por el Lema~\ref{lema-2-contr}, sabemos que $\varphi_n \in E_{a,b}$.
+  Ahora, las derivadas $\varphi'_n(t) = f(t,\varphi(s)) \geq M$ están uniformemente acotadas por $M$,
+  por lo que la sucesión es equicontinua, y además, las $\varphi_n$ están uniformemente acotadas
+  por
+  \[
+    \varphi_n(t) = x_0 + \int_{t_0}^t f_n(s,\varphi_n(s))\,ds \leq x_0 + aM.
+  \]
+  Aplicando ahora el \textit{Teorema de Ascoli-Arzelá}, tenemos una una parcial uniformemente
+  convergente $\varphi_{\sigma(n)} \overset{c.u.}\longrightarrow \varphi$. Podemos tomar límites y usar el \textit{Teorema de la convergencia
+  dominada de Lebesgue} sabiendo $f_n(s,\varphi_n(s)) \leq M$ para tener
+  \[\begin{aligned}
+    \varphi(t) &=
+    \lim_{n \to \infty} \left(x_0 + \int_{t_0}^t f_n(s,\varphi_n(s))\,ds\right) \\&=
+    x_0 + \int_{t_0}^t \lim_{n \to \infty} f_n(s,\varphi_n(s))\,ds =
+    x_0 + \int_{t_0}^t f(s,\varphi(s))\,ds.
+  \end{aligned}\]
+  Donde usamos que $f_{\sigma(n)}(s,\varphi_{\sigma(n)}(s)) \to f(s,\varphi(s))$ por tenerse $f_n \overset{c.u.}\longrightarrow f$. La $\varphi$,
+  que es continua por ser límite uniforme de continuas, es una solución.
+\end{proof}
+\begin{theorem}[de Cauchy-Peano]
+  Para $D = \mathring{D} \subset \mathbb{R} \times \mathbb{R}^d$ y $f \colon D \to \mathbb{R}^{d}$ continua con $(t_0,x_0) \in D$, el PVI
+ \[\left\{\begin{array}{c}
+ x' = f(t,x), \\
+ x(t_0) = x_0,
+          \end{array}\right.\]
+  tiene solución.
+\end{theorem}
+\begin{proof}
+  Siendo $D$ abierto, existen $\overline{a},b \in \mathbb{R}^{+}$ tales que
+  $\eR_{a,b} \subseteq D$. En este compacto, por \textit{Teorema de Weierstrass},
+  tenemos que $\exists M\colon \forall (t,x) \in \eR_{a,b}\colon \norm{f(t,x)} \leq M$.
+  Podemos ahora tomar $a = \min \set{b/M,\overline{a}}$ para tener las condiciones
+  de la Proposición~\ref{propcauchypeano} en $\eR_{a,b}$. Esto nos dará una solución al
+  Problema de Volterra en el intervalo $[t_0-a,t_0+a]$ que será solución al PVI
+  en $(t_0-a,t_0+a)$.
+\end{proof}
+
+
 \bibliography{Bibliography}
+\bibliographystyle{alpha}
+
+La demostración del Teorema de Stone-Weierstrass la tomamos
+de~\cite{rudin64}; pero en lugar de aproximar la raíz cuadrada usando el
+Teorema de aproximación de Weierstrass, como se hace allí, 
+hemos tomado la idea de aproximar la raíz cuadrada usando su serie de
+Taylor y resolviendo la ecuación diferencial de~\cite{queen}.
+
+\begin{appendices}
+\section{Implementación de iterantes de Picard}
+A continuación presentamos una implementación del proceso de cálculo
+de iterantes de Picard.
+
+\begin{verbatim}
+#!/usr/bin/env sage
+# -*- coding: utf-8 -*-
+
+# Iterantes de Picard
+# SageMath version 8.1
+# Autor: Mario Román
+def picard(f,t0,x0,n):
+    if n == 0: return (lambda s: x0)
+    phi_ant = picard(f,t0,x0,n-1)
+    return (lambda s: x0 + integral(f(s,phi_ant(s)),s,t0,t))
+
+var('t')
+print("Para $f(t,x) = x$, se tiene $\displaystyle\phi_5(t)={}$.\\\\"
+      .format(latex(picard(lambda t,x: x, 0,1, 5)(t))))
+print("Para $f(t,x) = -x$, se tiene $\displaystyle\phi_5(t)={}$.\\\\"
+      .format(latex(picard(lambda t,x: -x, 0,1, 5)(t))))
+print("Para $f(t,x) = 2tx$, se tiene $\displaystyle\phi_5(t)={}$.\\\\"      
+      .format(latex(picard(lambda t,x: 2*t*x, 0,1, 5)(t))))
+\end{verbatim}
+
+De este código obtenemos en \LaTeX\ la salida siguiente.
+
+Para $f(t,x) = x$, se tiene $\displaystyle\phi_5(t)=\frac{1}{120} \, t^{5} + \frac{1}{24} \, t^{4} + \frac{1}{6} \, t^{3} + \frac{1}{2} \, t^{2} + t + 1$.\\
+Para $f(t,x) = -x$, se tiene $\displaystyle\phi_5(t)=-\frac{1}{120} \, t^{5} + \frac{1}{24} \, t^{4} - \frac{1}{6} \, t^{3} + \frac{1}{2} \, t^{2} - t + 1$.\\
+Para $f(t,x) = 2tx$, se tiene $\displaystyle\phi_5(t)=\frac{1}{120} \, t^{10} + \frac{1}{24} \, t^{8} + \frac{1}{6} \, t^{6} + \frac{1}{2} \, t^{4} + t^{2} + 1$.\\
+
+Asumiendo en todos los casos $x(0) = 1$.
+\end{appendices}
+
 \end{document}
